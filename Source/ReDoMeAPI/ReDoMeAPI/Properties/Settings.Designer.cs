@@ -41,5 +41,14 @@ namespace ReDoMeAPI.Properties {
                 return ((string)(this["ConnectionString"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http")]
+        public string Mode {
+            get {
+                return ((string)(this["Mode"]));
+            }
+        }
     }
 }

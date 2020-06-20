@@ -75,7 +75,9 @@
     <Compile Include="Source\Models\Request.cs" />
     <Compile Include="Source\Models\RequestWithOffer.cs" />
     <Compile Include="Source\Models\Salon.cs" />
+    <Compile Include="Source\Models\StarByFaceItem.cs" />
     <Compile Include="Source\Options.cs" />
+    <Compile Include="Source\WebClient\StarByFaceClient.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

@@ -193,6 +193,44 @@ namespace ReDoMeAPI
                     SendLogMessage("ended ReDoMeApi/GetBarberPortfolio", System.Diagnostics.EventLogEntryType.SuccessAudit);
                 }
             };
+            Get["ReDoMeApi/getStarByFace"] = parameters =>
+            {
+                try
+                {
+                    SendLogMessage("called ReDoMeApi/getStarByFace", System.Diagnostics.EventLogEntryType.SuccessAudit);
+
+                    if (!this.Request.Query.photo_link.HasValue)
+                    {
+                        throw new Exception("Missing parameter photo_link");
+                    }
+
+                    string photo_link = this.Request.Query.photo_link;
+
+
+                    StarByFaceList faceList = StarByFaceClient.GetStarsList(photo_link);
+                    //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
+                    //    throw new Exception("Invalid password or login");
+
+                    //PhotoList photos = Database.getBarberPhotos(barber_vk_id, PhotoType.PortfolioMaster);
+                    //if (photos == null)
+                    //{
+                    //    ErrorAnswer answer = new ErrorAnswer("server error");
+                    //    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    //}
+                    return ReDoMeAPIResponse.CreateResponse(faceList.ToJson(), HttpStatusCode.OK);
+                }
+                catch (Exception exc)
+                {
+                    string Err = $"Error getStarByFace: {exc.Message}";
+                    SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                }
+                finally
+                {
+                    SendLogMessage("ended ReDoMeApi/getStarByFace", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                }
+            };
         }
         //---------------------------------------------
         protected void SendLogMessage(string _Message, System.Diagnostics.EventLogEntryType _Type, Exception _Exception = null)

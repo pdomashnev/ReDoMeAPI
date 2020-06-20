@@ -23,9 +23,15 @@ namespace ReDoMeAPI
                 HostConfiguration hostConfigs = new HostConfiguration();
                 hostConfigs.UrlReservations.CreateAutomatically = true;
                 int port = Options.MainOptions.WebServicePort;
-                Uri uri = new Uri("http://localhost:" + port.ToString());
+                string url = "";
+                if (Properties.Settings.Default.Mode == "https")
+                    url = "https://localhost:" + port.ToString();
+                else
+                    url = "http://localhost:" + port.ToString();
+                Uri uri = new Uri(url);
                 var host = new NancyHost(hostConfigs, uri);
                 host.Start();
+                Console.WriteLine("API started");
                 Console.ReadLine();
             }
             catch (Exception e)
