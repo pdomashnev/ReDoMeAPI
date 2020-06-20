@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using Nancy;
 using Nancy.Extensions;
-using System.Text;
 using System.IO;
 
 namespace ReDoMeAPI
@@ -34,16 +33,16 @@ namespace ReDoMeAPI
                     if (salon == null)
                     {
                         ErrorAnswer answer = new ErrorAnswer("salon not found");
-                        return CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
                     }
-                    return CreateResponse(salon.ToJson(), HttpStatusCode.OK);
+                    return ReDoMeAPIResponse.CreateResponse(salon.ToJson(), HttpStatusCode.OK);
                 }
                 catch (Exception exc)
                 {
                     string Err = $"Error GetSalon: {exc.Message}";
                     SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
                     ErrorAnswer answer = new ErrorAnswer(exc.Message);
-                    return CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
                 }
                 finally
                 {
@@ -70,16 +69,16 @@ namespace ReDoMeAPI
                     if (salon == null)
                     {
                         ErrorAnswer answer = new ErrorAnswer("salon not found");
-                        return CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
                     }
-                    return CreateResponse(salon.ToJson(), HttpStatusCode.OK);
+                    return ReDoMeAPIResponse.CreateResponse(salon.ToJson(), HttpStatusCode.OK);
                 }
                 catch (Exception exc)
                 {
                     string Err = $"Error GetSalonById: {exc.Message}";
                     SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
                     ErrorAnswer answer = new ErrorAnswer(exc.Message);
-                    return CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
                 }
                 finally
                 {
@@ -106,16 +105,16 @@ namespace ReDoMeAPI
                     if (photos == null)
                     {
                         ErrorAnswer answer = new ErrorAnswer("server error");
-                        return CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
                     }
-                    return CreateResponse(photos.ToJson(), HttpStatusCode.OK);
+                    return ReDoMeAPIResponse.CreateResponse(photos.ToJson(), HttpStatusCode.OK);
                 }
                 catch (Exception exc)
                 {
                     string Err = $"Error GetSalonPortfolio: {exc.Message}";
                     SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
                     ErrorAnswer answer = new ErrorAnswer(exc.Message);
-                    return CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
                 }
                 finally
                 {
@@ -142,16 +141,16 @@ namespace ReDoMeAPI
                     if (barber == null)
                     {
                         ErrorAnswer answer = new ErrorAnswer("barber not found");
-                        return CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
                     }
-                    return CreateResponse(barber.ToJson(), HttpStatusCode.OK);
+                    return ReDoMeAPIResponse.CreateResponse(barber.ToJson(), HttpStatusCode.OK);
                 }
                 catch (Exception exc)
                 {
                     string Err = $"Error GetBarber: {exc.Message}";
                     SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
                     ErrorAnswer answer = new ErrorAnswer(exc.Message);
-                    return CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
                 }
                 finally
                 {
@@ -178,38 +177,21 @@ namespace ReDoMeAPI
                     if (photos == null)
                     {
                         ErrorAnswer answer = new ErrorAnswer("server error");
-                        return CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
                     }
-                    return CreateResponse(photos.ToJson(), HttpStatusCode.OK);
+                    return ReDoMeAPIResponse.CreateResponse(photos.ToJson(), HttpStatusCode.OK);
                 }
                 catch (Exception exc)
                 {
                     string Err = $"Error GetBarberPortfolio: {exc.Message}";
                     SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
                     ErrorAnswer answer = new ErrorAnswer(exc.Message);
-                    return CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
                 }
                 finally
                 {
                     SendLogMessage("ended ReDoMeApi/GetBarberPortfolio", System.Diagnostics.EventLogEntryType.SuccessAudit);
                 }
-            };
-
-        }
-        //---------------------------------------------
-        protected Response CreateResponse(string _response, HttpStatusCode _status)
-        {
-            return new Response
-            {
-                ContentType = "application/json",
-                
-                Contents = stream =>
-                {
-                    TextWriter writer = new StreamWriter(stream);
-                    writer.WriteLine(_response);
-                    writer.Close();
-                },
-                StatusCode = _status
             };
         }
         //---------------------------------------------

@@ -27,6 +27,7 @@ namespace ReDoMeAPI
     }
     public class Request
     {
+        public Int64 id { set; get; }
         public string client_vk_id { set; get; }
         public string client_name { set; get; }
         public string city { set; get; }
@@ -34,7 +35,7 @@ namespace ReDoMeAPI
 
         public RequestType type { set; get; }
         public ReqeustState state { set; get; }
-        public int score { set; get; }
+        public int? score { set; get; }
         public string ToJson() => JsonConvert.SerializeObject(this);
 
         public static Request FromJson(string json) => JsonConvert.DeserializeObject<Request>(json);

@@ -59,7 +59,13 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Source\Common\ErrorAnswer.cs" />
+    <Compile Include="Source\Controllers\Helpers.cs" />
     <Compile Include="Source\Controllers\MainController.cs" />
+    <Compile Include="Source\Controllers\OfferController.cs" />
+    <Compile Include="Source\Controllers\RequestController.cs" />
+    <Compile Include="Source\Database\AddPhotoCommand.cs" />
+    <Compile Include="Source\Database\CreateOfferCommand.cs" />
+    <Compile Include="Source\Database\CreateRequestCommand.cs" />
     <Compile Include="Source\Database\Database.cs" />
     <Compile Include="Source\Logger.cs" />
     <Compile Include="Source\Models\Barber.cs" />

@@ -35,7 +35,7 @@ namespace ReDoMeAPI.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Data Source=81.177.102.160,27468;Persist Security Info=True;Password=Q123werty!;U" +
-            "ser ID=sa;Initial Catalog=Barber")]
+            "ser ID=sa;Initial Catalog=Barber2")]
         public string ConnectionString {
             get {
                 return ((string)(this["ConnectionString"]));

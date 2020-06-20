@@ -256,37 +256,136 @@ namespace ReDoMeAPI
             return photoList;
         }
         //---------------------------------------------
-        static public int createRequest(Request _request)
+        static public Int64 createRequest(Request _request)
         {
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
             try
-            { 
-                sqlExpression =
-                    "INSERT INTO [RECEPTION_RECORD] ([MEDORG_ID], [REC_REC_ID], [BRA_ID], [WORK_ID], [DOCT_ID], [REC_REC_DATE], [REC_REC_TIME], [REC_REC_DURATION], [DIS_CARD_NUMBER], [REC_REC_GUID], [REC_CONF_URL]) VALUES (@MEDORG_ID, @REC_REC_ID, @BRA_ID, @WORK_ID, @DOCT_ID, @REC_REC_DATE, @REC_REC_TIME, @REC_REC_DURATION, @DIS_CARD_NUMBER, @REC_REC_GUID, @REC_CONF_URL)";
-                command = new SqlCommand(sqlExpression, connection);
-                command.Parameters.Add(new SqlParameter("MEDORG_ID", PostData.MEDORG_ID));
-                command.Parameters.Add(new SqlParameter("REC_REC_ID", PostData.POST_Table[i].REC_REC_ID));
-                command.Parameters.Add(new SqlParameter("BRA_ID", PostData.POST_Table[i].BRA_ID));
-                command.Parameters.Add(new SqlParameter("WORK_ID", PostData.POST_Table[i].WORK_ID));
-                command.Parameters.Add(new SqlParameter("DOCT_ID", PostData.POST_Table[i].DOCT_ID));
-                command.Parameters.Add(new SqlParameter("REC_REC_DATE", PostData.POST_Table[i].REC_REC_DATE));
-                command.Parameters.Add(new SqlParameter("REC_REC_TIME", PostData.POST_Table[i].REC_REC_TIME));
-                command.Parameters.Add(new SqlParameter("REC_REC_DURATION", PostData.POST_Table[i].REC_REC_DURATION));
-                command.Parameters.Add(new SqlParameter("DIS_CARD_NUMBER", (PostData.POST_Table[i].DIS_CARD_NUMBER != null) ? PostData.POST_Table[i].DIS_CARD_NUMBER : ""));
-                param = new SqlParameter("REC_REC_GUID", System.Data.SqlDbType.VarChar, 50);
-                param.IsNullable = true;
-                if (!String.IsNullOrEmpty(PostData.POST_Table[i].INT_REC_GUID))
-                    param.Value = PostData.POST_Table[i].INT_REC_GUID;
-                else
-                    param.Value = DBNull.Value;
-                command.Parameters.Add(param);
-                param = new SqlParameter("REC_CONF_URL", System.Data.SqlDbType.VarChar, 1024);
-                param.IsNullable = true;
-                if (!String.IsNullOrEmpty(PostData.POST_Table[i].REC_CONF_URL))
-                    param.Value = PostData.POST_Table[i].REC_CONF_URL;
-                else
-                    param.Value = DBNull.Value;
-                command.Parameters.Add(param);
-                command.ExecuteNonQuery();
+            {
+                connection.Open();
+                CreateRequestCommand command = new CreateRequestCommand(connection);
+                Int64 req_id = command.Execute(_request);
+                connection.Close();
+                return req_id;
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+        }
+        //---------------------------------------------
+        static public bool addPhotosToRequest(Int64 _req_ID, PhotoList _photos)
+        {
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                AddPhotoCommand command = new AddPhotoCommand(connection);
+                foreach (Photo photo in _photos.items)
+                {
+                    command.AddToRequest(_req_ID, photo);
+                }
+                connection.Close();
+                return true;
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+        }
+        //---------------------------------------------
+        static public Int64 createOffer(Offer _offer)
+        {
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                CreateOfferCommand command = new CreateOfferCommand(connection);
+                Int64 offer_id = command.Execute(_offer);
+                connection.Close();
+                return offer_id;
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+        }
+        //---------------------------------------------
+        static public bool addPhotosToOffer(Int64 _offer_ID, PhotoList _photos)
+        {
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                AddPhotoCommand command = new AddPhotoCommand(connection);
+                foreach (Photo photo in _photos.items)
+                {
+                    command.AddToOffer(_offer_ID, photo);
+                }
+                connection.Close();
+                return true;
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+        }
+        //---------------------------------------------
+        static public OfferList getOffersForRequest(int _req_id)
+        {
+            OfferList offerList = new OfferList();
+            offerList.items = new List<Offer>();
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                //string sqlExpression = "SELECT B.[BRA_ID], B.[BRA_NAME] FROM [WORKER_DOCTOR] DW, [WORKER_BRANCH] WB, [BRANCH] B WHERE DW.[DOCT_ID] = @DOCT_ID AND DW.[WORK_ID] = WB.[WORK_ID] AND WB.[BRA_ID] = B.[BRA_ID] AND DW.[MEDORG_ID] = @MEDORG_ID AND DW.[MEDORG_ID] = B.[MEDORG_ID] AND WB.[MEDORG_ID] = B.[MEDORG_ID] AND [TIME_PER_ID] IS NOT NULL GROUP BY B.[BRA_ID], B.[BRA_NAME] ";
+                string sqlExpression =
+                    @"SELECT offer_id, req_id, bar_vk_id, sal_id, offer_cost, offer_fordate, offer_selected, offer_comment
+                            FROM offer
+                            WHERE req_id = @REQ_ID";
+                SqlCommand command = new SqlCommand(sqlExpression, connection);
+                command.Parameters.Add(new SqlParameter("REQ_ID", _req_id));
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        Offer item = new Offer();
+                        item.id = reader.GetInt64(0);
+                        item.req_id= reader.GetInt64(1);
+                        if (!reader.IsDBNull(2))
+                            item.bar_vk_id = reader.GetString(2);
+                        if (!reader.IsDBNull(3))
+                            item.sal_id = reader.GetInt32(3);
+                        item.cost = reader.GetDouble(4);
+                        item.date = reader.GetDateTime(5);
+                        item.selected = reader.GetBoolean(6);
+                        if (!reader.IsDBNull(7))
+                            item.comment = reader.GetString(7);
+                        offerList.items.Add(item);
+                    }
+                }
+                reader.Close();
                 connection.Close();
             }
             catch (Exception e)
@@ -298,7 +397,7 @@ namespace ReDoMeAPI
             {
                 if (connection != null) connection.Close();
             }
-
+            return offerList;
         }
         //---------------------------------------------
         static protected void SendLogMessage(string _Message, System.Diagnostics.EventLogEntryType _Type, Exception _Exception = null)
