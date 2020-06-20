@@ -73,6 +73,7 @@
     <Compile Include="Source\Models\Offer.cs" />
     <Compile Include="Source\Models\Photo.cs" />
     <Compile Include="Source\Models\Request.cs" />
+    <Compile Include="Source\Models\RequestWithOffer.cs" />
     <Compile Include="Source\Models\Salon.cs" />
     <Compile Include="Source\Options.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">

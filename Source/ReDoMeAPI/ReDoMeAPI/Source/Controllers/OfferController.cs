@@ -155,6 +155,46 @@ namespace ReDoMeAPI
                     SendLogMessage("ended ReDoMeApi/Offer/Delete", System.Diagnostics.EventLogEntryType.SuccessAudit);
                 }
             };
+            Get["ReDoMeApi/Offer/GetStatusesByBarber"] = parameters =>
+            {
+                try
+                {
+                    SendLogMessage("called ReDoMeApi/Offer/GetStatusesByBarber", System.Diagnostics.EventLogEntryType.SuccessAudit);
+
+                    if (!this.Request.Query.barber.HasValue)
+                    {
+                        throw new Exception("Missing parameter Barber");
+                    }
+
+                    string barberVkId = this.Request.Query.barber;
+                    RequestState state = RequestState.Any;
+                    if (this.Request.Query.state.HasValue)
+                        state = (RequestState)this.Request.Query.state;
+
+
+                    //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
+                    //    throw new Exception("Invalid password or login");
+
+                    RequestWithOfferList offers = Database.getOffersState(barberVkId, state);
+                    if (offers == null)
+                    {
+                        ErrorAnswer answer = new ErrorAnswer("server error");
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    }
+                    return ReDoMeAPIResponse.CreateResponse(offers.ToJson(), HttpStatusCode.OK);
+                }
+                catch (Exception exc)
+                {
+                    string Err = $"Error Offer/GetStatusesByBarber: {exc.Message}";
+                    SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                }
+                finally
+                {
+                    SendLogMessage("ended ReDoMeApi/Offer/GetStatusesByBarber", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                }
+            };
 
         }
         //---------------------------------------------

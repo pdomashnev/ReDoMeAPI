@@ -644,6 +644,74 @@ namespace ReDoMeAPI
             return requestList;
         }
         //---------------------------------------------
+        static public RequestWithOfferList getOffersState(string _vk_id, RequestState _state)
+        {
+            RequestWithOfferList offerList = new RequestWithOfferList();
+            offerList.items = new List<RequestWithOffer>();
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                //string sqlExpression = "SELECT B.[BRA_ID], B.[BRA_NAME] FROM [WORKER_DOCTOR] DW, [WORKER_BRANCH] WB, [BRANCH] B WHERE DW.[DOCT_ID] = @DOCT_ID AND DW.[WORK_ID] = WB.[WORK_ID] AND WB.[BRA_ID] = B.[BRA_ID] AND DW.[MEDORG_ID] = @MEDORG_ID AND DW.[MEDORG_ID] = B.[MEDORG_ID] AND WB.[MEDORG_ID] = B.[MEDORG_ID] AND [TIME_PER_ID] IS NOT NULL GROUP BY B.[BRA_ID], B.[BRA_NAME] ";
+                string sqlExpression =
+                    @"SELECT r.req_id, req_vk_id, req_clientname, req_city, req_type, req_status, work_score, req_comment,
+	                        o.Offer_ID,  o.Bar_VK_ID, o.sal_id, o.Offer_Cost, o.Offer_ForDate, o.Offer_Selected, o.Offer_Comment
+	                        FROM Request r inner join
+		                        Offer o ON r.req_id = o.Req_ID
+	                        WHERE o.Bar_VK_ID = @BAR_VK_ID AND (req_status=@REQ_STATUS OR @REQ_STATUS = 0)";
+                SqlCommand command = new SqlCommand(sqlExpression, connection);
+                command.Parameters.Add(new SqlParameter("BAR_VK_ID", _vk_id));
+                command.Parameters.Add(new SqlParameter("REQ_STATUS", (Int16)_state));
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        RequestWithOffer item = new RequestWithOffer();
+                        item.request = new Request();
+                        item.offer = new Offer();
+                        item.request.id = reader.GetInt64(0);
+                        if (!reader.IsDBNull(1))
+                            item.request.client_vk_id = reader.GetString(1);
+                        item.request.client_name = reader.GetString(2);
+                        item.request.city = reader.GetString(3);
+                        item.request.type = (RequestType)reader.GetInt16(4);
+                        item.request.state = (RequestState)reader.GetInt16(5);
+                        if (!reader.IsDBNull(6))
+                            item.request.score = reader.GetInt16(6);
+                        if (!reader.IsDBNull(7))
+                            item.request.comment = reader.GetString(7);
+
+                        item.offer.id = reader.GetInt64(8);
+                        item.offer.req_id = reader.GetInt64(0);
+                        if (!reader.IsDBNull(9))
+                            item.offer.bar_vk_id = reader.GetString(9);
+                        if (!reader.IsDBNull(10))
+                            item.offer.sal_id = reader.GetInt32(10);
+                        item.offer.cost = reader.GetDouble(11);
+                        item.offer.date = reader.GetDateTime(12);
+                        item.offer.selected = reader.GetBoolean(13);
+                        if (!reader.IsDBNull(14))
+                            item.offer.comment = reader.GetString(14);
+
+                        offerList.items.Add(item);
+                    }
+                }
+                reader.Close();
+                connection.Close();
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+            return offerList;
+        }
+        //---------------------------------------------
         static protected void SendLogMessage(string _Message, System.Diagnostics.EventLogEntryType _Type, Exception _Exception = null)
         {
             Logger.AddMessageToLog(new LogMessage(_Message, "Database", _Type, _Exception));
