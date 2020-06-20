@@ -18,7 +18,7 @@ namespace ReDoMeAPI
                     SendLogMessage("called ReDoMeApi/Request/Create", System.Diagnostics.EventLogEntryType.SuccessAudit);
                     var jsonString = this.Request.Body.AsString();
                     Request request = ReDoMeAPI.Request.FromJson(jsonString);
-                    request.state = ReqeustState.New;
+                    request.state = RequestState.New;
                     //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
                     //    throw new Exception("Invalid password or login");
 
@@ -115,17 +115,58 @@ namespace ReDoMeAPI
                     SendLogMessage("ended ReDoMeApi/Request/GetOffers", System.Diagnostics.EventLogEntryType.SuccessAudit);
                 }
             };
-            Get["ReDoMeApi/Request/GetAllActive"] = parameters =>
+            Get["ReDoMeApi/Request/SetScore"] = parameters =>
             {
                 try
                 {
-                    SendLogMessage("called ReDoMeApi/Request/GetAll", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                    SendLogMessage("called ReDoMeApi/Request/SetScore", System.Diagnostics.EventLogEntryType.SuccessAudit);
+
+                    if (!this.Request.Query.req_id.HasValue)
+                    {
+                        throw new Exception("Missing parameter req_id");
+                    }
+                    if (!this.Request.Query.score.HasValue)
+                    {
+                        throw new Exception("Missing parameter score");
+                    }
+
+                    int Req_ID = this.Request.Query.req_id;
+                    int Score = this.Request.Query.score;
+
+                    //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
+                    //    throw new Exception("Invalid password or login");
+
+                    if (!Database.setScoreForRequest(Req_ID, Score))
+                    {
+                        ErrorAnswer answer = new ErrorAnswer("server error");
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    }
+                    return ReDoMeAPIResponse.CreateResponse("OK", HttpStatusCode.OK);
+                }
+                catch (Exception exc)
+                {
+                    string Err = $"Error Request/SetScore: {exc.Message}";
+                    SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                }
+                finally
+                {
+                    SendLogMessage("ended ReDoMeApi/Request/SetScore", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                }
+            };
+
+            Get["ReDoMeApi/Request/GetAllNew"] = parameters =>
+            {
+                try
+                {
+                    SendLogMessage("called ReDoMeApi/Request/GetAllNew", System.Diagnostics.EventLogEntryType.SuccessAudit);
 
 
                     //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
                     //    throw new Exception("Invalid password or login");
 
-                    RequestList requests = Database.getActiveRequests();
+                    RequestList requests = Database.getRequests(RequestState.New);
                     if (requests == null)
                     {
                         ErrorAnswer answer = new ErrorAnswer("server error");
@@ -135,14 +176,119 @@ namespace ReDoMeAPI
                 }
                 catch (Exception exc)
                 {
-                    string Err = $"Error Request/GetAllActive: {exc.Message}";
+                    string Err = $"Error Request/GetAllNew: {exc.Message}";
                     SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
                     ErrorAnswer answer = new ErrorAnswer(exc.Message);
                     return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
                 }
                 finally
                 {
-                    SendLogMessage("ended ReDoMeApi/Request/GetAllActive", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                    SendLogMessage("ended ReDoMeApi/Request/GetAllNew", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                }
+            };
+
+            Get["ReDoMeApi/Request/GetAll"] = parameters =>
+            {
+                try
+                {
+                    SendLogMessage("called ReDoMeApi/Request/GetAll", System.Diagnostics.EventLogEntryType.SuccessAudit);
+
+
+                    //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
+                    //    throw new Exception("Invalid password or login");
+
+                    RequestList requests = Database.getRequests(RequestState.Any);
+                    if (requests == null)
+                    {
+                        ErrorAnswer answer = new ErrorAnswer("server error");
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    }
+                    return ReDoMeAPIResponse.CreateResponse(requests.ToJson(), HttpStatusCode.OK);
+                }
+                catch (Exception exc)
+                {
+                    string Err = $"Error Request/GetAll: {exc.Message}";
+                    SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                }
+                finally
+                {
+                    SendLogMessage("ended ReDoMeApi/Request/GetAll", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                }
+            };
+            Get["ReDoMeApi/Request/GetByClient"] = parameters =>
+            {
+                try
+                {
+                    SendLogMessage("called ReDoMeApi/Request/GetByClient", System.Diagnostics.EventLogEntryType.SuccessAudit);
+
+                    if (!this.Request.Query.client.HasValue)
+                    {
+                        throw new Exception("Missing parameter Client");
+                    }
+
+                    string clientVkId = this.Request.Query.client;
+
+
+                    //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
+                    //    throw new Exception("Invalid password or login");
+
+                    RequestList requests = Database.getRequestsByClient(clientVkId);
+                    if (requests == null)
+                    {
+                        ErrorAnswer answer = new ErrorAnswer("server error");
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    }
+                    return ReDoMeAPIResponse.CreateResponse(requests.ToJson(), HttpStatusCode.OK);
+                }
+                catch (Exception exc)
+                {
+                    string Err = $"Error Request/GetByClient: {exc.Message}";
+                    SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                }
+                finally
+                {
+                    SendLogMessage("ended ReDoMeApi/Request/GetByClient", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                }
+            };
+            Get["ReDoMeApi/Request/GetByBarber"] = parameters =>
+            {
+                try
+                {
+                    SendLogMessage("called ReDoMeApi/Request/GetByBarber", System.Diagnostics.EventLogEntryType.SuccessAudit);
+
+                    if (!this.Request.Query.barber.HasValue)
+                    {
+                        throw new Exception("Missing parameter Barber");
+                    }
+
+                    string barberVkId = this.Request.Query.barber;
+
+
+                    //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
+                    //    throw new Exception("Invalid password or login");
+
+                    RequestList requests = Database.getRequestsByMaster(barberVkId);
+                    if (requests == null)
+                    {
+                        ErrorAnswer answer = new ErrorAnswer("server error");
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    }
+                    return ReDoMeAPIResponse.CreateResponse(requests.ToJson(), HttpStatusCode.OK);
+                }
+                catch (Exception exc)
+                {
+                    string Err = $"Error Request/GetByBarber: {exc.Message}";
+                    SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                }
+                finally
+                {
+                    SendLogMessage("ended ReDoMeApi/Request/GetByBarber", System.Diagnostics.EventLogEntryType.SuccessAudit);
                 }
             };
 

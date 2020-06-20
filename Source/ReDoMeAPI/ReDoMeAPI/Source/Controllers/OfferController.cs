@@ -120,6 +120,41 @@ namespace ReDoMeAPI
                     SendLogMessage("ended ReDoMeApi/Offer/Accept", System.Diagnostics.EventLogEntryType.SuccessAudit);
                 }
             };
+            Get["ReDoMeApi/Offer/Delete"] = parameters =>
+            {
+                try
+                {
+                    SendLogMessage("called ReDoMeApi/Offer/Delete", System.Diagnostics.EventLogEntryType.SuccessAudit);
+
+                    if (!this.Request.Query.offer_id.HasValue)
+                    {
+                        throw new Exception("Missing parameter offer_id");
+                    }
+
+                    int Offer_ID = this.Request.Query.offer_id;
+
+                    //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
+                    //    throw new Exception("Invalid password or login");
+
+                    if (!Database.deleteOffer(Offer_ID))
+                    {
+                        ErrorAnswer answer = new ErrorAnswer("offer not found");
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    }
+                    return ReDoMeAPIResponse.CreateResponse("OK", HttpStatusCode.OK);
+                }
+                catch (Exception exc)
+                {
+                    string Err = $"Error Offer/Delete: {exc.Message}";
+                    SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                }
+                finally
+                {
+                    SendLogMessage("ended ReDoMeApi/Offer/Delete", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                }
+            };
 
         }
         //---------------------------------------------

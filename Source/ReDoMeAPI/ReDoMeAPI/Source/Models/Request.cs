@@ -16,8 +16,9 @@ namespace ReDoMeAPI
         AsStart = 3
     }
 
-    public enum ReqeustState
+    public enum RequestState
     {
+        Any = 0,
         //1 - Новая
         New = 1,
         //2 - На исполнении
@@ -41,8 +42,9 @@ namespace ReDoMeAPI
         public string comment { set; get; }
 
         public RequestType type { set; get; }
-        public ReqeustState state { set; get; }
+        public RequestState state { set; get; }
         public int? score { set; get; }
+        public int offer_count { set; get; }
         public string ToJson() => JsonConvert.SerializeObject(this);
 
         public static Request FromJson(string json) => JsonConvert.DeserializeObject<Request>(json);

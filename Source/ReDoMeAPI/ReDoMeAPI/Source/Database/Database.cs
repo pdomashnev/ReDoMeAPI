@@ -422,7 +422,56 @@ namespace ReDoMeAPI
             }
         }
         //---------------------------------------------
-        static public RequestList getActiveRequests()
+        static public bool setScoreForRequest(Int64 _req_ID, int _score)
+        {
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                string sqlExpression = "UPDATE Request SET work_score = @SCORE, Req_Status = 3 WHERE req_id = @REQ_ID";
+                SqlCommand command = new SqlCommand(sqlExpression, connection);
+                command.Parameters.Add(new SqlParameter("SCORE", _score));
+                command.Parameters.Add(new SqlParameter("REQ_ID", _req_ID));
+                command.ExecuteNonQuery();
+                connection.Close();
+                return true;
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+        }
+        //---------------------------------------------
+        static public bool deleteOffer(Int64 _offer_ID)
+        {
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                string sqlExpression = "DELETE FROM Offer WHERE offer_id = @OFFER_ID";
+                SqlCommand command = new SqlCommand(sqlExpression, connection);
+                command.Parameters.Add(new SqlParameter("OFFER_ID", _offer_ID));
+                command.ExecuteNonQuery();
+                connection.Close();
+                return true;
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+        }
+        //---------------------------------------------
+        static public RequestList getRequests(RequestState _State)
         {
             RequestList requestList = new RequestList();
             requestList.items = new List<Request>();
@@ -432,19 +481,16 @@ namespace ReDoMeAPI
                 connection.Open();
                 //string sqlExpression = "SELECT B.[BRA_ID], B.[BRA_NAME] FROM [WORKER_DOCTOR] DW, [WORKER_BRANCH] WB, [BRANCH] B WHERE DW.[DOCT_ID] = @DOCT_ID AND DW.[WORK_ID] = WB.[WORK_ID] AND WB.[BRA_ID] = B.[BRA_ID] AND DW.[MEDORG_ID] = @MEDORG_ID AND DW.[MEDORG_ID] = B.[MEDORG_ID] AND WB.[MEDORG_ID] = B.[MEDORG_ID] AND [TIME_PER_ID] IS NOT NULL GROUP BY B.[BRA_ID], B.[BRA_NAME] ";
                 string sqlExpression =
-                    @"SELECT *
-                            FROM
-                            (
-                            SELECT r.req_id, req_vk_id, req_clientname, req_city, req_type, req_status, work_score, req_comment, ISNULL(o.offer_selected, 0) offer
-                            FROM Request r left join
-	                            (
-		                            SELECT offer_id, req_id, Offer_Selected
-			                            FROM Offer o 
-			                            WHERE o.Offer_Selected = 1
-	                            ) o on r.req_id = o.req_id
-                            ) A
-                            WHERE offer = 0";
+                    @"SELECT r.req_id, req_vk_id, req_clientname, req_city, req_type, req_status, work_score, req_comment, ISNULL(o.offer_count, 0) offer_count
+                        FROM Request r left join
+	                        (
+		                        SELECT count(offer_id) as offer_count, req_id
+			                        FROM Offer o 
+			                        GROUP BY req_id
+	                        ) o on r.req_id = o.req_id
+                        WHERE (r.Req_Status = @REQ_STATE OR @REQ_STATE = 0)";
                 SqlCommand command = new SqlCommand(sqlExpression, connection);
+                command.Parameters.Add(new SqlParameter("REQ_STATE", (int)_State));
                 SqlDataReader reader = command.ExecuteReader();
                 if (reader.HasRows)
                 {
@@ -457,11 +503,129 @@ namespace ReDoMeAPI
                         item.client_name = reader.GetString(2);
                         item.city = reader.GetString(3);
                         item.type = (RequestType)reader.GetInt16(4);
-                        item.state = (ReqeustState)reader.GetInt16(5);
+                        item.state = (RequestState)reader.GetInt16(5);
                         if (!reader.IsDBNull(6))
                             item.score = reader.GetInt16(6);
                         if (!reader.IsDBNull(7))
                             item.comment = reader.GetString(7);
+                        item.offer_count = reader.GetInt32(8);
+                        requestList.items.Add(item);
+                    }
+                }
+                reader.Close();
+                connection.Close();
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+            return requestList;
+        }
+        //---------------------------------------------
+        static public RequestList getRequestsByClient(string _vk_id)
+        {
+            RequestList requestList = new RequestList();
+            requestList.items = new List<Request>();
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                //string sqlExpression = "SELECT B.[BRA_ID], B.[BRA_NAME] FROM [WORKER_DOCTOR] DW, [WORKER_BRANCH] WB, [BRANCH] B WHERE DW.[DOCT_ID] = @DOCT_ID AND DW.[WORK_ID] = WB.[WORK_ID] AND WB.[BRA_ID] = B.[BRA_ID] AND DW.[MEDORG_ID] = @MEDORG_ID AND DW.[MEDORG_ID] = B.[MEDORG_ID] AND WB.[MEDORG_ID] = B.[MEDORG_ID] AND [TIME_PER_ID] IS NOT NULL GROUP BY B.[BRA_ID], B.[BRA_NAME] ";
+                string sqlExpression =
+                    @"SELECT r.req_id, req_vk_id, req_clientname, req_city, req_type, req_status, work_score, req_comment, ISNULL(o.offer_count, 0) offer_count
+                        FROM Request r left join
+	                        (
+		                        SELECT count(offer_id) as offer_count, req_id
+			                        FROM Offer o 
+			                        GROUP BY req_id
+	                        ) o on r.req_id = o.req_id
+                        WHERE r.Req_VK_ID = @REQ_VK_ID";
+                SqlCommand command = new SqlCommand(sqlExpression, connection);
+                command.Parameters.Add(new SqlParameter("REQ_VK_ID", _vk_id));
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        Request item = new Request();
+                        item.id = reader.GetInt64(0);
+                        if (!reader.IsDBNull(1))
+                            item.client_vk_id = reader.GetString(1);
+                        item.client_name = reader.GetString(2);
+                        item.city = reader.GetString(3);
+                        item.type = (RequestType)reader.GetInt16(4);
+                        item.state = (RequestState)reader.GetInt16(5);
+                        if (!reader.IsDBNull(6))
+                            item.score = reader.GetInt16(6);
+                        if (!reader.IsDBNull(7))
+                            item.comment = reader.GetString(7);
+                        item.offer_count = reader.GetInt32(8);
+                        requestList.items.Add(item);
+                    }
+                }
+                reader.Close();
+                connection.Close();
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+            return requestList;
+        }
+        //---------------------------------------------
+        static public RequestList getRequestsByMaster(string _vk_id)
+        {
+            RequestList requestList = new RequestList();
+            requestList.items = new List<Request>();
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                //string sqlExpression = "SELECT B.[BRA_ID], B.[BRA_NAME] FROM [WORKER_DOCTOR] DW, [WORKER_BRANCH] WB, [BRANCH] B WHERE DW.[DOCT_ID] = @DOCT_ID AND DW.[WORK_ID] = WB.[WORK_ID] AND WB.[BRA_ID] = B.[BRA_ID] AND DW.[MEDORG_ID] = @MEDORG_ID AND DW.[MEDORG_ID] = B.[MEDORG_ID] AND WB.[MEDORG_ID] = B.[MEDORG_ID] AND [TIME_PER_ID] IS NOT NULL GROUP BY B.[BRA_ID], B.[BRA_NAME] ";
+                string sqlExpression =
+                    @"SELECT r.req_id, req_vk_id, req_clientname, req_city, req_type, req_status, work_score, req_comment, ISNULL(o.offer_count, 0) offer_count
+                        FROM Request r left join
+	                        (
+		                        SELECT count(offer_id) as offer_count, req_id
+			                        FROM Offer o 
+			                        GROUP BY req_id
+	                        ) o on r.req_id = o.req_id inner join
+			                (
+				                SELECT count(offer_id) as offer_count, req_id
+					                FROM Offer o
+					                WHERE o.Bar_VK_ID = @BAR_VK_ID
+			                        GROUP BY req_id
+			                ) o2 on r.Req_ID = o2.Req_ID";
+                SqlCommand command = new SqlCommand(sqlExpression, connection);
+                command.Parameters.Add(new SqlParameter("BAR_VK_ID", _vk_id));
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        Request item = new Request();
+                        item.id = reader.GetInt64(0);
+                        if (!reader.IsDBNull(1))
+                            item.client_vk_id = reader.GetString(1);
+                        item.client_name = reader.GetString(2);
+                        item.city = reader.GetString(3);
+                        item.type = (RequestType)reader.GetInt16(4);
+                        item.state = (RequestState)reader.GetInt16(5);
+                        if (!reader.IsDBNull(6))
+                            item.score = reader.GetInt16(6);
+                        if (!reader.IsDBNull(7))
+                            item.comment = reader.GetString(7);
+                        item.offer_count = reader.GetInt32(8);
                         requestList.items.Add(item);
                     }
                 }
