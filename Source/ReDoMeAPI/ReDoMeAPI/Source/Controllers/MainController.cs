@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Nancy;
 using Nancy.Extensions;
+using System.Text;
+using System.IO;
 
 namespace ReDoMeAPI
 {
@@ -28,63 +30,37 @@ namespace ReDoMeAPI
                     //    throw new Exception("Invalid password or login");
 
                     Salon salon = Database.getSalonByBarber(barberVkId);
-                    if(salon == null)
-                        return "salon not found"
-
-                    MIIProductStatus productStatus = new MIIProductStatus
+                    if (salon == null)
                     {
-                        Code = SN,
-                        Plant = Plant,
-                        Status = Status,
-                        Grade = Grade
-                    };
-                    AutoResetEvent res = new AutoResetEvent(false);
-                    Tracking.WebService.WebServiceCallback callback = new WebService.WebServiceCallback
-                    {
-                        callbackEvent = res
-                    };
-                    Singleton.Agent.Notify(new SRequestInfo((uint)Messages.SET_PRODUCT_STATUS, productStatus, callback));
-                    res.WaitOne();
-                    if (!callback.Result)
-                        throw (Exception)callback.Data;
-                    WebService.Answer answer = new WebService.Answer("OK");
-
-                    SendLogMessage("processed TrackingApi/SetSNStatus", System.Diagnostics.EventLogEntryType.SuccessAudit);
-                    return new Response
-                    {
-                        ContentType = "Text",
-                        Contents = stream =>
-                        {
-                            TextWriter writer = new StreamWriter(stream);
-                            writer.WriteLine(answer.ToXML());
-                            writer.Close();
-                        },
-                        StatusCode = HttpStatusCode.OK
-                    };
-
-                    //                    return answer.ToXML();
+                        ErrorAnswer answer = new ErrorAnswer("salon not found");
+                        return CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    }
+                    return CreateResponse(salon.ToJson(), HttpStatusCode.OK);
                 }
                 catch (Exception exc)
                 {
-                    string Err = $"Error SetSNStatus: {exc.Message}";
+                    string Err = $"Error GetSalon: {exc.Message}";
                     SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
-
-                    WebService.Answer answer = new WebService.Answer("Error", exc.Message);
-
-                    return new Response
-                    {
-                        ContentType = "Text",
-                        Contents = stream =>
-                        {
-                            TextWriter writer = new StreamWriter(stream);
-                            writer.WriteLine(answer.ToXML());
-                            writer.Close();
-                        },
-                        StatusCode = HttpStatusCode.OK
-                    };
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return CreateResponse(answer.ToJson(), HttpStatusCode.OK);
                 }
             };
 
+        }
+        //---------------------------------------------
+        protected Response CreateResponse(string _response, HttpStatusCode _status)
+        {
+            return new Response
+            {
+                ContentType = "Text",
+                Contents = stream =>
+                {
+                    TextWriter writer = new StreamWriter(stream);
+                    writer.WriteLine(_response);
+                    writer.Close();
+                },
+                StatusCode = _status
+            };
         }
         //---------------------------------------------
         protected void SendLogMessage(string _Message, System.Diagnostics.EventLogEntryType _Type, Exception _Exception = null)
