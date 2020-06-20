@@ -12,7 +12,7 @@ namespace ReDoMeAPI
     {
         static public Response CreateResponse(string _response, HttpStatusCode _status)
         {
-            return new Response
+            Response resp = new Response
             {
                 ContentType = "application/json",
                 
@@ -24,6 +24,8 @@ namespace ReDoMeAPI
                 },
                 StatusCode = _status
             };
+            resp.Headers["Access-Control-Allow-Origin"] = "*";
+            return resp;
         }
         //---------------------------------------------
     }

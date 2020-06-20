@@ -115,6 +115,36 @@ namespace ReDoMeAPI
                     SendLogMessage("ended ReDoMeApi/Request/GetOffers", System.Diagnostics.EventLogEntryType.SuccessAudit);
                 }
             };
+            Get["ReDoMeApi/Request/GetAllActive"] = parameters =>
+            {
+                try
+                {
+                    SendLogMessage("called ReDoMeApi/Request/GetAll", System.Diagnostics.EventLogEntryType.SuccessAudit);
+
+
+                    //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
+                    //    throw new Exception("Invalid password or login");
+
+                    RequestList requests = Database.getActiveRequests();
+                    if (requests == null)
+                    {
+                        ErrorAnswer answer = new ErrorAnswer("server error");
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    }
+                    return ReDoMeAPIResponse.CreateResponse(requests.ToJson(), HttpStatusCode.OK);
+                }
+                catch (Exception exc)
+                {
+                    string Err = $"Error Request/GetAllActive: {exc.Message}";
+                    SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                }
+                finally
+                {
+                    SendLogMessage("ended ReDoMeApi/Request/GetAllActive", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                }
+            };
 
         }
         //---------------------------------------------

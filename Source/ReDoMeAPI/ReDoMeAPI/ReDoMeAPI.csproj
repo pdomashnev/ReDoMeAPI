@@ -63,6 +63,7 @@
     <Compile Include="Source\Controllers\MainController.cs" />
     <Compile Include="Source\Controllers\OfferController.cs" />
     <Compile Include="Source\Controllers\RequestController.cs" />
+    <Compile Include="Source\Database\AcceptOfferCommand.cs" />
     <Compile Include="Source\Database\AddPhotoCommand.cs" />
     <Compile Include="Source\Database\CreateOfferCommand.cs" />
     <Compile Include="Source\Database\CreateRequestCommand.cs" />

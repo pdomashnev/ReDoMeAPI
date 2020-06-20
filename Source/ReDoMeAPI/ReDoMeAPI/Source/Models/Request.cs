@@ -25,6 +25,13 @@ namespace ReDoMeAPI
         //3 - Завершено
         Finished = 3
     }
+    public class RequestList
+    {
+        public List<Request> items;
+        public string ToJson() => JsonConvert.SerializeObject(this);
+
+        public static RequestList FromJson(string json) => JsonConvert.DeserializeObject<RequestList>(json);
+    }
     public class Request
     {
         public Int64 id { set; get; }

@@ -400,6 +400,86 @@ namespace ReDoMeAPI
             return offerList;
         }
         //---------------------------------------------
+        static public bool acceptOffer(Int64 _Req_ID, Int64 _offer_ID)
+        {
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                AcceptOfferCommand command = new AcceptOfferCommand(connection);
+                bool bResult = command.Execute(_Req_ID, _offer_ID);
+                connection.Close();
+                return bResult;
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+        }
+        //---------------------------------------------
+        static public RequestList getActiveRequests()
+        {
+            RequestList requestList = new RequestList();
+            requestList.items = new List<Request>();
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                //string sqlExpression = "SELECT B.[BRA_ID], B.[BRA_NAME] FROM [WORKER_DOCTOR] DW, [WORKER_BRANCH] WB, [BRANCH] B WHERE DW.[DOCT_ID] = @DOCT_ID AND DW.[WORK_ID] = WB.[WORK_ID] AND WB.[BRA_ID] = B.[BRA_ID] AND DW.[MEDORG_ID] = @MEDORG_ID AND DW.[MEDORG_ID] = B.[MEDORG_ID] AND WB.[MEDORG_ID] = B.[MEDORG_ID] AND [TIME_PER_ID] IS NOT NULL GROUP BY B.[BRA_ID], B.[BRA_NAME] ";
+                string sqlExpression =
+                    @"SELECT *
+                            FROM
+                            (
+                            SELECT r.req_id, req_vk_id, req_clientname, req_city, req_type, req_status, work_score, req_comment, ISNULL(o.offer_selected, 0) offer
+                            FROM Request r left join
+	                            (
+		                            SELECT offer_id, req_id, Offer_Selected
+			                            FROM Offer o 
+			                            WHERE o.Offer_Selected = 1
+	                            ) o on r.req_id = o.req_id
+                            ) A
+                            WHERE offer = 0";
+                SqlCommand command = new SqlCommand(sqlExpression, connection);
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        Request item = new Request();
+                        item.id = reader.GetInt64(0);
+                        if (!reader.IsDBNull(1))
+                            item.client_vk_id = reader.GetString(1);
+                        item.client_name = reader.GetString(2);
+                        item.city = reader.GetString(3);
+                        item.type = (RequestType)reader.GetInt16(4);
+                        item.state = (ReqeustState)reader.GetInt16(5);
+                        if (!reader.IsDBNull(6))
+                            item.score = reader.GetInt16(6);
+                        if (!reader.IsDBNull(7))
+                            item.comment = reader.GetString(7);
+                        requestList.items.Add(item);
+                    }
+                }
+                reader.Close();
+                connection.Close();
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+            return requestList;
+        }
+        //---------------------------------------------
         static protected void SendLogMessage(string _Message, System.Diagnostics.EventLogEntryType _Type, Exception _Exception = null)
         {
             Logger.AddMessageToLog(new LogMessage(_Message, "Database", _Type, _Exception));
