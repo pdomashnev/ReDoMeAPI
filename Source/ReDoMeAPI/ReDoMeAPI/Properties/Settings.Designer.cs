@@ -25,17 +25,8 @@ namespace ReDoMeAPI.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("43300")]
-        public int WebServicePort {
-            get {
-                return ((int)(this["WebServicePort"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Data Source=81.177.102.160,27468;Persist Security Info=True;Password=Q123werty!;U" +
-            "ser ID=sa;Initial Catalog=Barber2")]
+            "ser ID=redome_user;Initial Catalog=Barber2")]
         public string ConnectionString {
             get {
                 return ((string)(this["ConnectionString"]));
@@ -44,7 +35,16 @@ namespace ReDoMeAPI.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http")]
+        [global::System.Configuration.DefaultSettingValueAttribute("43210")]
+        public int WebServicePort {
+            get {
+                return ((int)(this["WebServicePort"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https")]
         public string Mode {
             get {
                 return ((string)(this["Mode"]));
