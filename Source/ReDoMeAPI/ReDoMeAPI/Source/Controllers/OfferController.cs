@@ -169,7 +169,7 @@ namespace ReDoMeAPI
                     string barberVkId = this.Request.Query.barber;
                     RequestState state = RequestState.Any;
                     if (this.Request.Query.state.HasValue)
-                        state = (RequestState)this.Request.Query.state;
+                        state = (RequestState)((Int16)this.Request.Query.state);
 
 
                     //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
