@@ -38,10 +38,13 @@ namespace ReDoMeAPI
     {
         public List<Photo> items;
         public PhotoType listType;
+        public string ToJson() => JsonConvert.SerializeObject(this);
+
+        public static PhotoList FromJson(string json) => JsonConvert.DeserializeObject<PhotoList>(json);
     }
     public class Photo
     {
-        public int id { set; get; }
+        public Int64 id { set; get; }
         public PhotoType type { set; get; }
         public string vk_link { set; get; }
         public string content { set; get; }

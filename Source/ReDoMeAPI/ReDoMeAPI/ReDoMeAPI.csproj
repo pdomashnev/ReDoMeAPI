@@ -63,7 +63,9 @@
     <Compile Include="Source\Database\Database.cs" />
     <Compile Include="Source\Logger.cs" />
     <Compile Include="Source\Models\Barber.cs" />
+    <Compile Include="Source\Models\Offer.cs" />
     <Compile Include="Source\Models\Photo.cs" />
+    <Compile Include="Source\Models\Request.cs" />
     <Compile Include="Source\Models\Salon.cs" />
     <Compile Include="Source\Options.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">

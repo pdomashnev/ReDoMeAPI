@@ -13,12 +13,13 @@ namespace ReDoMeAPI
         public int sal_id { set; get; }
         public string name { set; get; }
         public string spec { set; get; }
+        public string city { set; get; }
         public string master { set; get; }
         public string address { set; get; }
         public string phone { set; get; }
         public string about { set; get; }
         public string certs { set; get; }
-        public string raiting { set; get; }
+        public int raiting { set; get; }
 
         public string ToJson() => JsonConvert.SerializeObject(this);
 
