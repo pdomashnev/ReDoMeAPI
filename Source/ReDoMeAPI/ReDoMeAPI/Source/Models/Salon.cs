@@ -6,6 +6,14 @@ using Newtonsoft.Json;
 
 namespace ReDoMeAPI
 {
+    public class SalonList
+    {
+        public List<Salon> items;
+
+        public string ToJson() => JsonConvert.SerializeObject(this);
+
+        public static SalonList FromJson(string json) => JsonConvert.DeserializeObject<SalonList>(json);
+    }
     public class Salon
     {
 

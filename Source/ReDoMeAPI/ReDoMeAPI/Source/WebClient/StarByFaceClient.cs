@@ -39,33 +39,37 @@ namespace ReDoMeAPI
             StarByFaceList resList = new StarByFaceList();
             resList.items = new List<StarByFaceItem>();
             XElement xelem = Exec(_photo_link);
-            XElement rootDiv = xelem.Element("div");
-            IEnumerable<XElement> items = rootDiv.Elements("div");
-            foreach (XElement elem in items)
+            IEnumerable<XElement> rootDivs = xelem.Elements("div");
+            foreach (XElement rootDiv in rootDivs)
             {
-                StarByFaceItem item = new StarByFaceItem();
-                XElement textCenterDiv = elem.Element("div");
-                XElement progressProgressStripedDiv = textCenterDiv.Descendants("div")
-                    .FirstOrDefault(el => el.Attribute("class")?.Value == "progress progress-striped");
-                if(progressProgressStripedDiv != null)
+                if (rootDiv.Attribute("id").Value == "best-pair-result")
+                    continue;
+                IEnumerable<XElement> items = rootDiv.Elements("div");
+                foreach (XElement elem in items)
                 {
-                    string percentStr = progressProgressStripedDiv.Element("div").Attribute("similarity").Value;
-                    int val = 0;
-                    Int32.TryParse(percentStr, out val);
-                    item.percent = val;
-                }
-                XElement candidateRealDiv = textCenterDiv.Descendants("div")
-                    .FirstOrDefault(el => el.Attribute("class")?.Value == "candidate-real");
-                if(candidateRealDiv != null)
-                {
-                    item.url = candidateRealDiv.Element("img").Attribute("src").Value;
-                    XElement p = candidateRealDiv.Element("div").Element("p");
-                    item.name = p.Value;
-                }
+                    StarByFaceItem item = new StarByFaceItem();
+                    XElement textCenterDiv = elem.Element("div");
+                    XElement progressProgressStripedDiv = textCenterDiv.Descendants("div")
+                        .FirstOrDefault(el => el.Attribute("class")?.Value == "progress progress-striped");
+                    if (progressProgressStripedDiv != null)
+                    {
+                        string percentStr = progressProgressStripedDiv.Element("div").Attribute("similarity").Value;
+                        int val = 0;
+                        Int32.TryParse(percentStr, out val);
+                        item.percent = val;
+                    }
+                    XElement candidateRealDiv = textCenterDiv.Descendants("div")
+                        .FirstOrDefault(el => el.Attribute("class")?.Value == "candidate-real");
+                    if (candidateRealDiv != null)
+                    {
+                        item.url = candidateRealDiv.Element("img").Attribute("src").Value;
+                        XElement p = candidateRealDiv.Element("div").Element("p");
+                        item.name = p.Value;
+                    }
 
-                resList.items.Add(item);
+                    resList.items.Add(item);
+                }
             }
-
             return resList;
         }
     }

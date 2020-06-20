@@ -10,6 +10,53 @@ namespace ReDoMeAPI
     public class Database
     {
         //---------------------------------------------
+        static public SalonList getSalons()
+        {
+            SalonList salonList = new SalonList();
+            salonList.items = new List<Salon>();
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                //string sqlExpression = "SELECT B.[BRA_ID], B.[BRA_NAME] FROM [WORKER_DOCTOR] DW, [WORKER_BRANCH] WB, [BRANCH] B WHERE DW.[DOCT_ID] = @DOCT_ID AND DW.[WORK_ID] = WB.[WORK_ID] AND WB.[BRA_ID] = B.[BRA_ID] AND DW.[MEDORG_ID] = @MEDORG_ID AND DW.[MEDORG_ID] = B.[MEDORG_ID] AND WB.[MEDORG_ID] = B.[MEDORG_ID] AND [TIME_PER_ID] IS NOT NULL GROUP BY B.[BRA_ID], B.[BRA_NAME] ";
+                string sqlExpression =
+                    @"SELECT Sal_ID, Sal_VK_ID, Sal_Name, Sal_City, Sal_Address, Sal_Phone, Sal_Raiting
+                          FROM Salon s";
+                SqlCommand command = new SqlCommand(sqlExpression, connection);
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    Salon salon = new Salon();
+                    while (reader.Read())
+                    {
+                        salon = new Salon();
+                        salon.id = reader.GetInt32(0);
+                        if (!reader.IsDBNull(1))
+                            salon.vk_id = reader.GetString(1);
+                        salon.name = reader.GetString(2);
+                        salon.city = reader.GetString(3);
+                        if (!reader.IsDBNull(4))
+                            salon.address = reader.GetString(4);
+                        salon.phone = reader.GetString(5);
+                        salon.raiting = reader.GetInt32(6);
+                    }
+                    salonList.items.Add(salon);
+                }
+                reader.Close();
+                connection.Close();
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                return null;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+            return salonList;
+        }
+        //---------------------------------------------
         static public Salon getSalonByBarber(string _barber_vk_id)
         {
             Salon salon = null;
@@ -126,7 +173,8 @@ namespace ReDoMeAPI
                     {
                         barber = new Barber();
                         barber.vk_id = reader.GetString(0);
-                        barber.sal_id = reader.GetInt32(1);
+                        if (!reader.IsDBNull(1))
+                            barber.sal_id = reader.GetInt32(1);
                         barber.name = reader.GetString(2);
                         barber.spec = reader.GetString(3);
                         barber.city = reader.GetString(4);
@@ -154,6 +202,61 @@ namespace ReDoMeAPI
                 if (connection != null) connection.Close();
             }
             return barber;
+        }
+        //---------------------------------------------
+        static public BarberList getBarbers()
+        {
+            BarberList barberList = new BarberList();
+            barberList.items = new List<Barber>();
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                //string sqlExpression = "SELECT B.[BRA_ID], B.[BRA_NAME] FROM [WORKER_DOCTOR] DW, [WORKER_BRANCH] WB, [BRANCH] B WHERE DW.[DOCT_ID] = @DOCT_ID AND DW.[WORK_ID] = WB.[WORK_ID] AND WB.[BRA_ID] = B.[BRA_ID] AND DW.[MEDORG_ID] = @MEDORG_ID AND DW.[MEDORG_ID] = B.[MEDORG_ID] AND WB.[MEDORG_ID] = B.[MEDORG_ID] AND [TIME_PER_ID] IS NOT NULL GROUP BY B.[BRA_ID], B.[BRA_NAME] ";
+                string sqlExpression =
+                    @"SELECT bar_vk_id, sal_id, bar_name, bar_spec,
+                        bar_city, bar_address, bar_phone, bar_about, bar_certs,
+                        bar_raiting
+                        FROM barber";
+                SqlCommand command = new SqlCommand(sqlExpression, connection);
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    Barber barber = new Barber();
+                    while (reader.Read())
+                    {
+                        barber = new Barber();
+                        barber.vk_id = reader.GetString(0);
+                        if (!reader.IsDBNull(1))
+                            barber.sal_id = reader.GetInt32(1);
+                        barber.name = reader.GetString(2);
+                        barber.spec = reader.GetString(3);
+                        barber.city = reader.GetString(4);
+                        if (!reader.IsDBNull(5))
+                            barber.address = reader.GetString(5);
+                        if (!reader.IsDBNull(6))
+                            barber.phone = reader.GetString(6);
+                        if (!reader.IsDBNull(7))
+                            barber.about = reader.GetString(7);
+                        if (!reader.IsDBNull(8))
+                            barber.certs = reader.GetString(8);
+                        barber.raiting = reader.GetInt32(9);
+                    }
+                    barberList.items.Add(barber);
+                }
+                reader.Close();
+                connection.Close();
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                return null;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+            return barberList;
         }
         //---------------------------------------------
         static public PhotoList getSalonPhotos(int _sal_id, PhotoType _photoType)

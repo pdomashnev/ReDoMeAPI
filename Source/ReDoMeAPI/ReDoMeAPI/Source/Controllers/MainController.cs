@@ -85,6 +85,36 @@ namespace ReDoMeAPI
                     SendLogMessage("ended ReDoMeApi/GetSalonById", System.Diagnostics.EventLogEntryType.SuccessAudit);
                 }
             };
+            Get["ReDoMeApi/GetAllSalons"] = parameters =>
+            {
+                try
+                {
+                    SendLogMessage("called ReDoMeApi/GetAllSalons", System.Diagnostics.EventLogEntryType.SuccessAudit);
+
+
+                    //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
+                    //    throw new Exception("Invalid password or login");
+
+                    SalonList salonList = Database.getSalons();
+                    if (salonList == null)
+                    {
+                        ErrorAnswer answer = new ErrorAnswer("server error");
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    }
+                    return ReDoMeAPIResponse.CreateResponse(salonList.ToJson(), HttpStatusCode.OK);
+                }
+                catch (Exception exc)
+                {
+                    string Err = $"Error GetAllSalons: {exc.Message}";
+                    SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                }
+                finally
+                {
+                    SendLogMessage("ended ReDoMeApi/GetAllSalons", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                }
+            };
             Get["ReDoMeApi/GetSalonPortfolio"] = parameters =>
             {
                 try
@@ -119,6 +149,32 @@ namespace ReDoMeAPI
                 finally
                 {
                     SendLogMessage("ended ReDoMeApi/GetSalonPortfolio", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                }
+            };
+            Get["ReDoMeApi/GetAllBarbers"] = parameters =>
+            {
+                try
+                {
+                    SendLogMessage("called ReDoMeApi/GetAllBarbers", System.Diagnostics.EventLogEntryType.SuccessAudit);
+
+                    BarberList barberList = Database.getBarbers();
+                    if (barberList == null)
+                    {
+                        ErrorAnswer answer = new ErrorAnswer("server error");
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    }
+                    return ReDoMeAPIResponse.CreateResponse(barberList.ToJson(), HttpStatusCode.OK);
+                }
+                catch (Exception exc)
+                {
+                    string Err = $"Error GetAllBarbers: {exc.Message}";
+                    SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                }
+                finally
+                {
+                    SendLogMessage("ended ReDoMeApi/GetAllBarbers", System.Diagnostics.EventLogEntryType.SuccessAudit);
                 }
             };
             Get["ReDoMeApi/GetBarber"] = parameters =>
