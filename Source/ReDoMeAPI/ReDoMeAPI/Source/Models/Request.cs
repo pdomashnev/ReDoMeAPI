@@ -45,6 +45,7 @@ namespace ReDoMeAPI
         public RequestState state { set; get; }
         public int? score { set; get; }
         public int offer_count { set; get; }
+        public PhotoList photos { set; get; }
         public string ToJson() => JsonConvert.SerializeObject(this);
 
         public static Request FromJson(string json) => JsonConvert.DeserializeObject<Request>(json);

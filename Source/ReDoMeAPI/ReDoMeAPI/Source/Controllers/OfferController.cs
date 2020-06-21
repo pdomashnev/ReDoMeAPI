@@ -195,6 +195,42 @@ namespace ReDoMeAPI
                     SendLogMessage("ended ReDoMeApi/Offer/GetStatusesByBarber", System.Diagnostics.EventLogEntryType.SuccessAudit);
                 }
             };
+            Get["ReDoMeApi/Offer/GetPhotos"] = parameters =>
+            {
+                try
+                {
+                    SendLogMessage("called ReDoMeApi/Offer/GetPhotos", System.Diagnostics.EventLogEntryType.SuccessAudit);
+
+                    if (!this.Request.Query.offer_id.HasValue)
+                    {
+                        throw new Exception("Missing parameter offer_id");
+                    }
+
+                    int Offer_ID = this.Request.Query.offer_id;
+
+                    //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
+                    //    throw new Exception("Invalid password or login");
+
+                    PhotoList photos = Database.getOfferPhotos(Offer_ID);
+                    if (photos == null)
+                    {
+                        ErrorAnswer answer = new ErrorAnswer("server error");
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    }
+                    return ReDoMeAPIResponse.CreateResponse(photos.ToJson(), HttpStatusCode.OK);
+                }
+                catch (Exception exc)
+                {
+                    string Err = $"Error Offer/GetPhotos: {exc.Message}";
+                    SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                }
+                finally
+                {
+                    SendLogMessage("ended ReDoMeApi/Offer/GetPhotos", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                }
+            };
 
         }
         //---------------------------------------------

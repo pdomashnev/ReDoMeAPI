@@ -24,6 +24,7 @@ namespace ReDoMeAPI
         public DateTime date { set; get; }
         public string comment { set; get; }
         public bool selected { set; get; }
+        public PhotoList photos { set; get; }
 
         public string ToJson() => JsonConvert.SerializeObject(this);
 

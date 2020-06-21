@@ -359,6 +359,102 @@ namespace ReDoMeAPI
             return photoList;
         }
         //---------------------------------------------
+        static public PhotoList getRequestPhotos(Int64 _req_id)
+        {
+            PhotoList photoList = new PhotoList();
+            photoList.listType = PhotoType.Any;
+            photoList.items = new List<Photo>();
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                //string sqlExpression = "SELECT B.[BRA_ID], B.[BRA_NAME] FROM [WORKER_DOCTOR] DW, [WORKER_BRANCH] WB, [BRANCH] B WHERE DW.[DOCT_ID] = @DOCT_ID AND DW.[WORK_ID] = WB.[WORK_ID] AND WB.[BRA_ID] = B.[BRA_ID] AND DW.[MEDORG_ID] = @MEDORG_ID AND DW.[MEDORG_ID] = B.[MEDORG_ID] AND WB.[MEDORG_ID] = B.[MEDORG_ID] AND [TIME_PER_ID] IS NOT NULL GROUP BY B.[BRA_ID], B.[BRA_NAME] ";
+                string sqlExpression =
+                    @"select photo_id, Photo_Goal, Photo_VK_Link, Photo_Content, Photo_Comment
+                            from photo p
+                            where p.req_ID = @REQ_ID";
+                SqlCommand command = new SqlCommand(sqlExpression, connection);
+                command.Parameters.Add(new SqlParameter("REQ_ID", _req_id));
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        Photo item = new Photo();
+                        item.id = reader.GetInt64(0);
+                        item.type = (PhotoType)reader.GetInt16(1);
+                        if (!reader.IsDBNull(2))
+                            item.vk_link = reader.GetString(2);
+                        if (!reader.IsDBNull(3))
+                            item.content = reader.GetString(3);
+                        if (!reader.IsDBNull(4))
+                            item.comment = reader.GetString(4);
+                        photoList.items.Add(item);
+                    }
+                }
+                reader.Close();
+                connection.Close();
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+            return photoList;
+        }
+        //---------------------------------------------
+        static public PhotoList getOfferPhotos(Int64 _offer_id)
+        {
+            PhotoList photoList = new PhotoList();
+            photoList.listType = PhotoType.Any;
+            photoList.items = new List<Photo>();
+            SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
+            try
+            {
+                connection.Open();
+                //string sqlExpression = "SELECT B.[BRA_ID], B.[BRA_NAME] FROM [WORKER_DOCTOR] DW, [WORKER_BRANCH] WB, [BRANCH] B WHERE DW.[DOCT_ID] = @DOCT_ID AND DW.[WORK_ID] = WB.[WORK_ID] AND WB.[BRA_ID] = B.[BRA_ID] AND DW.[MEDORG_ID] = @MEDORG_ID AND DW.[MEDORG_ID] = B.[MEDORG_ID] AND WB.[MEDORG_ID] = B.[MEDORG_ID] AND [TIME_PER_ID] IS NOT NULL GROUP BY B.[BRA_ID], B.[BRA_NAME] ";
+                string sqlExpression =
+                    @"select photo_id, Photo_Goal, Photo_VK_Link, Photo_Content, Photo_Comment
+                            from photo p
+                            where p.offer_ID = @OFFER_ID";
+                SqlCommand command = new SqlCommand(sqlExpression, connection);
+                command.Parameters.Add(new SqlParameter("OFFER_ID", _offer_id));
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        Photo item = new Photo();
+                        item.id = reader.GetInt64(0);
+                        item.type = (PhotoType)reader.GetInt16(1);
+                        if (!reader.IsDBNull(2))
+                            item.vk_link = reader.GetString(2);
+                        if (!reader.IsDBNull(3))
+                            item.content = reader.GetString(3);
+                        if (!reader.IsDBNull(4))
+                            item.comment = reader.GetString(4);
+                        photoList.items.Add(item);
+                    }
+                }
+                reader.Close();
+                connection.Close();
+            }
+            catch (Exception e)
+            {
+                SendLogMessage(e.Message, System.Diagnostics.EventLogEntryType.Error, e);
+                throw e;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+            return photoList;
+        }
+        //---------------------------------------------
         static public Int64 createRequest(Request _request)
         {
             SqlConnection connection = new SqlConnection(Options.MainOptions.ConnectionString);
@@ -500,6 +596,10 @@ namespace ReDoMeAPI
             {
                 if (connection != null) connection.Close();
             }
+            foreach (Offer offer in offerList.items)
+            {
+                offer.photos = getOfferPhotos(offer.id);
+            }
             return offerList;
         }
         //---------------------------------------------
@@ -627,6 +727,10 @@ namespace ReDoMeAPI
             {
                 if (connection != null) connection.Close();
             }
+            foreach(Request req in requestList.items)
+            {
+                req.photos = getRequestPhotos(req.id);
+            }
             return requestList;
         }
         //---------------------------------------------
@@ -683,6 +787,11 @@ namespace ReDoMeAPI
             {
                 if (connection != null) connection.Close();
             }
+            foreach (Request req in requestList.items)
+            {
+                req.photos = getRequestPhotos(req.id);
+            }
+
             return requestList;
         }
         //---------------------------------------------
@@ -744,6 +853,11 @@ namespace ReDoMeAPI
             {
                 if (connection != null) connection.Close();
             }
+            foreach (Request req in requestList.items)
+            {
+                req.photos = getRequestPhotos(req.id);
+            }
+
             return requestList;
         }
         //---------------------------------------------
@@ -812,6 +926,12 @@ namespace ReDoMeAPI
             {
                 if (connection != null) connection.Close();
             }
+            foreach (RequestWithOffer req in offerList.items)
+            {
+                req.request.photos = getRequestPhotos(req.request.id);
+                req.offer.photos = getOfferPhotos(req.offer.id);
+            }
+
             return offerList;
         }
         //---------------------------------------------

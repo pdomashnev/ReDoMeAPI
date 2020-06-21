@@ -115,6 +115,42 @@ namespace ReDoMeAPI
                     SendLogMessage("ended ReDoMeApi/Request/GetOffers", System.Diagnostics.EventLogEntryType.SuccessAudit);
                 }
             };
+            Get["ReDoMeApi/Request/GetPhotos"] = parameters =>
+            {
+                try
+                {
+                    SendLogMessage("called ReDoMeApi/Request/GetPhotos", System.Diagnostics.EventLogEntryType.SuccessAudit);
+
+                    if (!this.Request.Query.req_id.HasValue)
+                    {
+                        throw new Exception("Missing parameter req_id");
+                    }
+
+                    int Req_ID = this.Request.Query.req_id;
+
+                    //if (User != Tracking.Options.MainOptions.WEBAPIUser || Password != Tracking.Options.MainOptions.WEBAPIPassword)
+                    //    throw new Exception("Invalid password or login");
+
+                    PhotoList photos = Database.getRequestPhotos(Req_ID);
+                    if (photos == null)
+                    {
+                        ErrorAnswer answer = new ErrorAnswer("server error");
+                        return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                    }
+                    return ReDoMeAPIResponse.CreateResponse(photos.ToJson(), HttpStatusCode.OK);
+                }
+                catch (Exception exc)
+                {
+                    string Err = $"Error Request/GetPhotos: {exc.Message}";
+                    SendLogMessage(Err, System.Diagnostics.EventLogEntryType.Error);
+                    ErrorAnswer answer = new ErrorAnswer(exc.Message);
+                    return ReDoMeAPIResponse.CreateResponse(answer.ToJson(), HttpStatusCode.OK);
+                }
+                finally
+                {
+                    SendLogMessage("ended ReDoMeApi/Request/GetPhotos", System.Diagnostics.EventLogEntryType.SuccessAudit);
+                }
+            };
             Get["ReDoMeApi/Request/SetScore"] = parameters =>
             {
                 try
